@@ -1,12 +1,8 @@
 from flask import Flask
+from backend.containers import blueprint
 
 app = Flask(__name__)
-
-
-@app.route('/')
-def hello_world():
-    return 'Hello World!'
-
+app.register_blueprint(blueprint)
 
 if __name__ == '__main__':
     app.run()
