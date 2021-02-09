@@ -2,12 +2,13 @@ from dataclasses import dataclass, MISSING, fields, Field
 
 
 class RowField(Field):
-    __slots__ = ('row_field', 'row_callback')
+    __slots__ = ('field', 'callback')
 
-    def __init__(self, row_field, row_callback, default, default_factory, init, repr, hash, compare, metadata):
+    # noinspection PyShadowingNames
+    def __init__(self, field, callback, default, default_factory, init, repr, hash, compare, metadata):
         super().__init__(default, default_factory, init, repr, hash, compare, metadata)
-        self.row_field = row_field
-        self.row_callback = row_callback
+        self.field = field
+        self.callback = callback
 
 
 # noinspection PyShadowingNames
@@ -18,9 +19,9 @@ def field(*, field=None, callback=None, default=MISSING, default_factory=MISSING
     if field is not None or callback is not None:
         if callback is not None:
             if field is not None:
-                raise ValueError('cannot specify both row_field and row_callback')
+                raise ValueError('cannot specify both field and callback')
             if not callable(callback):
-                raise ValueError('row_callback must be callable')
+                raise ValueError('callback must be callable')
         return RowField(field, callback, default, default_factory, init, repr, hash, compare, metadata)
     else:
         return Field(default, default_factory, init, repr, hash, compare, metadata)
@@ -69,10 +70,10 @@ def _process_class(cls, init, repr, eq, order, unsafe_hash, frozen):
             raise TypeError("Only dataclasses can be decorated with '@row_processor'")
         for fld in flds:
             if isinstance(fld, RowField):
-                if fld.row_field is not None:
-                    rkwargs[fld.name] = row[fld.row_field]
-                if fld.row_callback is not None:
-                    rkwargs[fld.name] = fld.row_callback(fld, row)
+                if fld.field is not None:
+                    rkwargs[fld.name] = row[fld.field]
+                if fld.callback is not None:
+                    rkwargs[fld.name] = fld.callback(fld, row)
             if callable(getattr(fld.type, 'from_row', None)):
                 rkwargs[fld.name] = fld.type.from_row(row)
         return cls(**rkwargs)
