@@ -22,4 +22,3 @@ yarn-error.log*
 /.editorconfig
 /config/
 /venv/
-/.package-lock.json
